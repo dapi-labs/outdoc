@@ -1,0 +1,26 @@
+{
+  "name": "doc-from-test",
+  "version": "0.0.1",
+  "description": "Generate OpenAPI document from local testing",
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dapi-labs/doc-from-test.git"
+  },
+  "author": "Dapi",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/dapi-labs/doc-from-test/issues"
+  },
+  "homepage": "https://github.com/dapi-labs/doc-from-test#readme",
+  "engines": {
+    "node": ">=16"
+  },
+  "devDependencies": {
+    "typescript": "^4.7.4"
+  }
+}
