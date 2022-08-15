@@ -15,11 +15,11 @@ export const rawNodejsTickObject = {
           'Content-Length: 12\r\n' +
           '\r\n' +
           '{"code":"100"}',
-        encoding: 'utf8',
+        encoding: 'utf8' as 'utf-8',
         callback: []
       }, {
         chunk: '',
-        encoding: 'latin1',
+        encoding: 'latin1' as 'latin1',
         callback: []
       }]
     }
@@ -28,7 +28,6 @@ export const rawNodejsTickObject = {
 
 export const rawNodejsServerResponse = {
   args: [{
-    contentLength: 12,
     _header: 'HTTP/1.1 200 OK\r\n' +
         'Content-Type: text/plain\r\n' +
         'Date: Tue, 09 Aug 2022 02:57:03 GMT\r\n' +
@@ -52,7 +51,7 @@ export const rawNodejsServerResponse = {
         'Content-Type',
         'application/x-www-form-urlencoded'
       ],
-      url: '/dapitest?name=test',
+      url: '/dapitest?search=test',
       method: 'POST' as OpenAPIV3_1.HttpMethods,
       _readableState: {
         buffer: {
@@ -120,12 +119,12 @@ export const expressServerResponse = {
         'Content-Length',
         '16',
         'Content-Type',
-        'application/x-www-form-urlencoded'
+        'application/json'
       ],
       url: '/api/endpoints/projects/5992f2f2-a3ef-4841-9bf8-102c9a701d2e?name=testdapi',
       method: 'POST' as OpenAPIV3_1.HttpMethods,
       params: { id: '5992f2f2-a3ef-4841-9bf8-102c9a701d2e' },
-      query: { name: 'testdapi' },
+      query: { search: 'testdapi' },
       baseUrl: '/api/endpoints',
       originalUrl: '/api/endpoints/projects/5992f2f2-a3ef-4841-9bf8-102c9a701d2e?name=testdapi',
       body: { name: 'dapi' }
