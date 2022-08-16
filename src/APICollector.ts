@@ -57,12 +57,12 @@ export default class APICollector {
 
   private extractURL (serverRes: ServerResponseArg): string | undefined {
     const parsedURL = url.parse(serverRes.req.url);
-    const path = parsedURL.pathname;
+    let path = parsedURL.pathname;
     if (!path) return;
     if (serverRes.req.params) {
       // convert /path/xxx-xxx-xxx-xxx => /path/:id
       Object.entries(serverRes.req.params).forEach(([key, value]) => {
-        path.replace(value, `:${key}`);
+        path = path!.replace(value, `:${key}`);
       });
     }
     return path;

@@ -19,7 +19,7 @@ export const rawNodejsTickObject = {
         callback: []
       }, {
         chunk: '',
-        encoding: 'latin1' as 'latin1',
+        encoding: 'latin1' as const,
         callback: []
       }]
     }
@@ -127,7 +127,7 @@ export const expressServerResponse = {
       query: { search: 'testdapi' },
       baseUrl: '/api/endpoints',
       originalUrl: '/api/endpoints/projects/5992f2f2-a3ef-4841-9bf8-102c9a701d2e?name=testdapi',
-      body: { name: 'dapi' }
+      body: { name: 'dapi v2' }
     }
   }]
 };
