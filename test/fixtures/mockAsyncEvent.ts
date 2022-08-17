@@ -8,14 +8,14 @@ export const rawNodejsTickObject = {
       bufferedIndex: 0,
       buffered: [{
         chunk: 'HTTP/1.1 200 OK\r\n' +
-          'Content-Type: application/json\r\n' +
+          'Content-Type: text/plain\r\n' +
           'Date: Tue, 09 Aug 2022 03:38:21 GMT\r\n' +
           'Connection: keep-alive\r\n' +
           'Keep-Alive: timeout=5\r\n' +
           'Content-Length: 12\r\n' +
           '\r\n' +
-          '{"code":"100"}',
-        encoding: 'utf8' as 'utf-8',
+          'plain test response',
+        encoding: 'utf-8' as 'utf-8',
         callback: []
       }, {
         chunk: '',
