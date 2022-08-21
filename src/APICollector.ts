@@ -56,7 +56,7 @@ export default class APICollector {
   }
 
   private extractURL (serverRes: ServerResponseArg): string | undefined {
-    const parsedURL = url.parse(serverRes.req.url);
+    const parsedURL = url.parse(serverRes.req.originalUrl || serverRes.req.url);
     let path = parsedURL.pathname;
     if (!path) return;
     if (serverRes.req.params) {
