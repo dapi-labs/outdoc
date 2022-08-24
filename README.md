@@ -18,7 +18,7 @@ Check if the field `main` in your package.json pointing to the file where the no
 
 If not, add `output.main` pointing to the file, e.g.:
 
-```json
+```
 {
   ...
   "outdoc": {
@@ -54,7 +54,7 @@ And it will generate an api.yaml in your root folder by default
 ## Typescript projects
 Add `output.main` in your package.json pointing to the file where the nodejs server exported, e.g.:
 
-```json
+```
 {
   ...
   "outdoc": {
