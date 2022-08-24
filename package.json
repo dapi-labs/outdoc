@@ -1,9 +1,8 @@
 {
   "name": "outdoc",
-  "version": "0.0.19",
+  "version": "0.1.0",
   "description": "Auto-generate OpenAPI document for Node.js service from the local testing",
   "main": "lib/index.js",
-  "typings": "lib/index.d.ts",
   "bin": {
     "outdoc": "./bin/outdoc.js"
   },
@@ -49,7 +48,7 @@
   "dependencies": {
     "commander": "^9.4.0",
     "content-type": "^1.0.4",
-    "js-yaml": "^4.1.0",
+    "json-to-pretty-yaml": "^1.2.2",
     "qs": "^6.11.0"
   }
 }

@@ -1,5 +1,6 @@
 import { mkdir, writeFile } from 'fs/promises';
 import path from 'path';
+import YAML from 'json-to-pretty-yaml';
 
 import type { OpenAPIV3_1 } from 'openapi-types';
 import type { API_URL, APICollectorInterface } from './APICollector.interface';
@@ -11,7 +12,7 @@ type GenDocOpts = {
   email?: string
 }
 
-const SUPPORTED_FORMAT = ['json', 'yaml'];
+const SUPPORTED_FORMAT = ['.json', '.yaml'];
 
 export default class APIGenerator {
   public static async generate (
@@ -37,10 +38,23 @@ export default class APIGenerator {
       paths
     };
 
-    const output = opts.output || 'api.json';
+    const output = opts.output || 'api.yaml';
     const fileFormat = path.extname(output);
-    // TODO: change format based on fileFormat
+    if (!SUPPORTED_FORMAT.includes(fileFormat)) {
+      throw new Error(`${fileFormat} file not supported`)
+    }
+
     await mkdir(path.dirname(output), { recursive: true });
-    await writeFile(output, JSON.stringify(apiDoc, null, 2));
+    switch (fileFormat) {
+      case ".json": {
+        await writeFile(output, JSON.stringify(apiDoc, null, 2));
+        break
+      }
+      case ".yaml": {
+        const yamlData = YAML.stringify(apiDoc)
+        await writeFile(output, yamlData);
+        break
+      }
+    }
   }
 }

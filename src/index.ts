@@ -28,15 +28,17 @@ export async function runner (
   const projectCWD = process.cwd();
   const packageJSONStr = await fsPromises.readFile(projectCWD + '/package.json', 'utf8')
   const packageJSON = JSON.parse(packageJSONStr)
-  // TODO
-  // if (!json || !json.main) throw new Error('TODO error')
-  const mainFilePath = `${projectCWD}/${packageJSON.main}`
+  const mainFilePath = packageJSON?.outdoc?.main || packageJSON?.main
+  if (!mainFilePath) throw new Error('Please define main or outdoc.main in package.json')
+
+  const mainFileAbsolutePath = `${projectCWD}/${mainFilePath}`
   const apiCollector = new APICollector();
   const requestHook = new RequestHook(apiCollector);
 
   const injectedCodes = RequestHook.getInjectedCodes()
-  await fsPromises.copyFile(mainFilePath, projectCWD + "/outdoc_tmp_file")
-  await fsPromises.writeFile(mainFilePath, injectedCodes, { flag: "a" })
+  await fsPromises.copyFile(mainFileAbsolutePath, projectCWD + "/outdoc_tmp_file")
+  await fsPromises.writeFile(mainFileAbsolutePath, injectedCodes, { flag: "a" })
+  await fsPromises.appendFile(mainFileAbsolutePath, "// @ts-nocheck")
 
   const childProcess = spawn(args[0], args.slice(1), { stdio: ["inherit", "pipe", "inherit"] });
 
@@ -77,7 +79,7 @@ export async function runner (
   })
 
   childProcess.on('close', async (code) => {
-    await fsPromises.copyFile(projectCWD + "/outdoc_tmp_file", mainFilePath)
+    await fsPromises.copyFile(projectCWD + "/outdoc_tmp_file", mainFileAbsolutePath)
     await fsPromises.rm(projectCWD + "/outdoc_tmp_file")
 
     if (code === 0) {
