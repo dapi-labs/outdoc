@@ -7,6 +7,10 @@
 
 Auto generate OpenAPI document from local testing
 
+The project still need more tests to cover more use cases
+
+Please try it in your project and let us know if you got any issues or suggestions
+
 ## Installation
 
 ```bash
