@@ -15,7 +15,7 @@ export const rawNodejsTickObject = {
           'Content-Length: 12\r\n' +
           '\r\n' +
           'plain test response',
-        encoding: 'utf-8' as 'utf-8',
+        encoding: 'utf-8' as const,
         callback: []
       }, {
         chunk: '',

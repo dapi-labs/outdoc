@@ -3,10 +3,9 @@ import qs from 'qs';
 import contentType from 'content-type';
 import type { OpenAPIV3_1 } from 'openapi-types';
 import type { ServerResponseArg, ObjectForResBodyBufferItem } from './types/asyncEventTypes';
+import type { API_URL, APICollectorInterface } from './APICollector.interface';
 
-type API_URL = string
-
-export default class APICollector {
+export default class APICollector implements APICollectorInterface {
   private items: Record<API_URL, OpenAPIV3_1.PathItemObject>;
 
   constructor () {
@@ -60,9 +59,9 @@ export default class APICollector {
     let path = parsedURL.pathname;
     if (!path) return;
     if (serverRes.req.params) {
-      // convert /path/xxx-xxx-xxx-xxx => /path/:id
+      // convert /path/xxx-xxx-xxx-xxx => /path/{id}
       Object.entries(serverRes.req.params).forEach(([key, value]) => {
-        path = path!.replace(value, `:${key}`);
+        path = path!.replace(value, `{${key}}`);
       });
     }
     return path;
@@ -83,16 +82,12 @@ export default class APICollector {
   }
 
   private extractHeaders (serverRes: ServerResponseArg): Array<OpenAPIV3_1.ParameterObject> {
-    const excludeHeaders = ['host', 'user-agent', 'content-length'];
+    const excludeHeaders = ['host', 'user-agent', 'content-length', 'content-type', 'accept'];
     const headers = this.genHeaderObjFromRawHeaders(
       serverRes.req.rawHeaders,
       { exclude: excludeHeaders }
     );
     return Object.entries(headers)
-      .filter(([key, value]) => {
-        if (key.toLowerCase() === 'accept' && value === "*/*") return false;
-        return true;
-      })
       .map(([key, value]) => ({
         in: 'header',
         name: key,
@@ -126,6 +121,7 @@ export default class APICollector {
     return Object.entries(serverRes.req.params).map(([key, value]) => ({
       in: 'path',
       name: key,
+      required: true,
       example: value,
       schema: {
         type: 'string'

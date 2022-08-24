@@ -2,11 +2,11 @@
   "compilerOptions": {
     "strict": true,
     "target": "ES5",
-    "sourceMap": true,
+    "sourceMap": false,
     "outDir": "lib",
-    "declaration": true,
+    "declaration": false,
     "moduleResolution": "node",
-    "removeComments": false,
+    "removeComments": true,
     "esModuleInterop": true,
     "downlevelIteration": true,
     "resolveJsonModule": true

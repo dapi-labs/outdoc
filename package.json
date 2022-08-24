@@ -1,15 +1,19 @@
 {
   "name": "outdoc",
-  "version": "0.0.1",
+  "version": "0.0.19",
   "description": "Auto-generate OpenAPI document for Node.js service from the local testing",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
+  "bin": {
+    "outdoc": "./bin/outdoc.js"
+  },
   "scripts": {
     "lint": "eslint .",
     "lint-fix": "eslint . --fix",
     "test": "env TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' mocha -r ts-node/register '**/*.test.*'",
     "prebuild": "rimraf lib",
-    "build": "tsc --build"
+    "build": "tsc --build",
+    "prepublishOnly": "npm run build"
   },
   "repository": {
     "type": "git",
@@ -45,6 +49,7 @@
   "dependencies": {
     "commander": "^9.4.0",
     "content-type": "^1.0.4",
+    "js-yaml": "^4.1.0",
     "qs": "^6.11.0"
   }
 }

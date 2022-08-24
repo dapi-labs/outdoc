@@ -1,71 +1,116 @@
-import async_hooks, { AsyncHook } from 'async_hooks';
+import {
+  PREFIX_RESPONSE_BODY_DATA,
+  PREFIX_SERVER_RESPONSE
+} from './constants';
 import type {
-  ObjectForResBodyArg,
   ObjectForResBodyBufferItem,
   ServerResponseArg
 } from './types/asyncEventTypes';
-import APICollector from './APICollector';
+import type { APICollectorInterface } from './APICollector.interface';
 
 /**
  * The response body data comes before ServerResponse event
  * The ServerResponse event will tell which asyncId it triggered
- * By this way we can get the full API data including req and res
+ * By this way we can get the full response
  */
 type EventMap = Record<number, ObjectForResBodyBufferItem | undefined>
 
+type ResponseBodyDataFromChildProcess = {
+  asyncId: number,
+  data: ObjectForResBodyBufferItem
+}
+
+type ServerResponseFromChildProcess = {
+  triggerAsyncId: number,
+  data: ServerResponseArg
+}
+
 export default class RequestHook {
-  private asyncHook: AsyncHook | null;
   private eventMap: EventMap;
-  private apiCollector: APICollector;
 
-  constructor () {
-    this.asyncHook = null;
-    this.eventMap = {};
-    this.apiCollector = new APICollector();
-  }
+  public static getInjectedCodes (): string {
+    return `
+      const async_hooks = require('async_hooks')
+      const asyncHook = async_hooks.createHook({ init });
+      asyncHook.enable();
 
-  public enable (): void {
-    this.asyncHook = async_hooks.createHook({ init: this.init });
-    this.asyncHook.enable();
-  }
+      function init(asyncId, type, triggerAsyncId, resource) {
+        if (type === "TickObject" && resource.args) {
+          const className = resource.args?.[0]?.constructor.name;
 
-  public disable (): void {
-    if (this.asyncHook) {
-      this.asyncHook.disable();
-      this.asyncHook = null;
-    }
-  }
+          // Response body data
+          if (className === "Object") {
+            const arg = resource.args[0]
+            if (arg?.stream?.server && arg?.state?.buffered) {
+              const dataItem = arg.state.buffered.find(item => {
+                if (!item) return false
+                return ['buffer', 'utf-8'].includes(item.encoding)
+              })
+              if (dataItem) {
+                const chunk = dataItem.encoding === 'buffer'
+                  ? dataItem.chunk.toString()
+                  : dataItem.chunk
+                const res = {
+                  asyncId,
+                  data: {
+                    encoding: dataItem.encoding,
+                    chunk
+                  }
+                }
+                console.log("${PREFIX_RESPONSE_BODY_DATA}" + JSON.stringify(res))
+              }
+            }
+          }
 
-  private extractResBody (arg: ObjectForResBodyArg): ObjectForResBodyBufferItem | undefined {
-    return arg.state.buffered.find(item => ['buffer', 'utf-8'].includes(item.encoding));
-  }
-
-  private init (
-    asyncId: number,
-    type: string,
-    triggerAsyncId: number,
-    resource: {
-      args: Array<ObjectForResBodyArg | ServerResponseArg>
-    }
-  ): void {
-    if (type === "TickObject" && resource.args) {
-      const className = resource.args?.[0]?.constructor.name;
-
-      // Check if it is response data, save it into eventMap
-      if (className === "Object") {
-        const myArg = resource.args[0] as ObjectForResBodyArg;
-        if (myArg?.stream?.server) {
-          this.eventMap[asyncId] = this.extractResBody(myArg);
+          // Server response
+          if (className === "ServerResponse") {
+            const arg = resource.args[0];
+            const res = {
+              triggerAsyncId,
+              data: {
+                _header: arg._header,
+                statusCode: arg.statusCode,
+                statusMessage: arg.statusMessage,
+                req: {
+                  rawHeaders: arg.req.rawHeaders,
+                  url: arg.req.url,
+                  method: arg.req.method,
+                  params: arg.req.params,
+                  query: arg.req.query,
+                  baseUrl: arg.req.baseUrl,
+                  originalUrl: arg.req.originalUrl,
+                  body: arg.req.body
+                }
+              }
+            }
+            if (arg.req._readableState?.buffer?.head?.data) {
+              res.data.req._readableState = {
+                buffer: {
+                  head: {
+                    data: arg.req._readableState.buffer.head.data.toString()
+                  }
+                }
+              }
+            }
+            console.log("${PREFIX_SERVER_RESPONSE}" + JSON.stringify(res))
+          }
         }
       }
+    `;
+  }
 
-      // Check if it is server response, pass it to APICollector
-      if (className === "ServerResponse") {
-        const myArg = resource.args[0] as ServerResponseArg;
-        const responseBodyData = this.eventMap[triggerAsyncId];
-        this.apiCollector.addAPIItem(myArg, responseBodyData);
-        delete this.eventMap[triggerAsyncId];
-      }
-    }
+  constructor (private apiCollector: APICollectorInterface) {
+    this.eventMap = {};
+  }
+
+  public handleResponseBodyData (res: ResponseBodyDataFromChildProcess): void {
+    this.eventMap[res.asyncId] = res.data;
+  }
+
+  public handleServerResponse (res: ServerResponseFromChildProcess): void {
+    const triggerAsyncId = res.triggerAsyncId;
+    const responseBodyData = this.eventMap[triggerAsyncId];
+    this.apiCollector.addAPIItem(res.data, responseBodyData);
+    delete this.eventMap[triggerAsyncId];
   }
 }

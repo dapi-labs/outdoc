@@ -24,10 +24,7 @@ describe("APICollector", () => {
       const url = Object.keys(items)[0];
       const openAPI = items[url].post;
       const headers = openAPI!.parameters!.filter((parameter: Record<string, any>) => parameter.in === 'header');
-      expect(headers).to.be.lengthOf(1);
-      expect(headers[0]).to.have.property('name', 'Content-Type');
-      expect(headers[0]).to.have.property('example', 'application/x-www-form-urlencoded');
-      expect(headers[0]).to.have.deep.property('schema', { type: 'string' });
+      expect(headers).to.be.lengthOf(0);
       done();
     });
 
@@ -61,16 +58,17 @@ describe("APICollector", () => {
       apiCollector.addAPIItem(expressServerResponse.args[0]);
       const items: Record<string, OpenAPIV3_1.PathItemObject> = apiCollector.getItems();
       const url = Object.keys(items)[0];
-      expect(url).to.contain.oneOf([':id'])
+      expect(url).to.contain.oneOf(['{id}']);
 
       const openAPI = items[url].post;
       const paths = openAPI!.parameters!.filter((parameter: Record<string, any>) => parameter.in === 'path');
       expect(paths).to.be.lengthOf(1);
       expect(paths[0]).to.have.property('name', 'id');
+      expect(paths[0]).to.have.property('required', true);
       expect(paths[0]).to.have.property('example', '5992f2f2-a3ef-4841-9bf8-102c9a701d2e');
       expect(paths[0]).to.have.deep.property('schema', { type: 'string' });
       done();
-    })
+    });
 
     it('should able to add request body from raw nodejs correctly', (done) => {
       apiCollector.addAPIItem(rawNodejsServerResponse.args[0]);
@@ -93,7 +91,7 @@ describe("APICollector", () => {
         }
       });
       done();
-    })
+    });
 
     it('should able to add request body express-like framework correctly', (done) => {
       apiCollector.addAPIItem(expressServerResponse.args[0]);
@@ -116,7 +114,7 @@ describe("APICollector", () => {
         }
       });
       done();
-    })
+    });
 
     it('should able to add response correctly from raw nodejs correctly', (done) => {
       apiCollector.addAPIItem(
@@ -139,7 +137,7 @@ describe("APICollector", () => {
         }
       });
       done();
-    })
+    });
 
     it('should able to add response correctly from express-like framework correctly', (done) => {
       apiCollector.addAPIItem(
@@ -172,25 +170,25 @@ describe("APICollector", () => {
         }
       });
       done();
-    })
+    });
 
     it('should able to add different method to the same API url', (done) => {
-      const rawNodejsServerResponseForGET = cloneDeep(rawNodejsServerResponse)
-      rawNodejsServerResponseForGET.args[0].req.method = 'GET' as OpenAPIV3_1.HttpMethods
+      const rawNodejsServerResponseForGET = cloneDeep(rawNodejsServerResponse);
+      rawNodejsServerResponseForGET.args[0].req.method = 'GET' as OpenAPIV3_1.HttpMethods;
 
       apiCollector.addAPIItem(rawNodejsServerResponse.args[0]);
       apiCollector.addAPIItem(rawNodejsServerResponseForGET.args[0]);
 
       const items: Record<string, OpenAPIV3_1.PathItemObject> = apiCollector.getItems();
       const url = Object.keys(items)[0];
-      expect(Object.keys(items[url])).to.be.lengthOf(2)
-      expect(items[url]).to.have.all.keys('get', 'post')
+      expect(Object.keys(items[url])).to.be.lengthOf(2);
+      expect(items[url]).to.have.all.keys('get', 'post');
       done();
-    })
+    });
 
     it('should able to add different status response to the same API', (done) => {
-      const rawNodejsServerResponseForFailed = cloneDeep(rawNodejsServerResponse)
-      rawNodejsServerResponseForFailed.args[0].statusCode = 403
+      const rawNodejsServerResponseForFailed = cloneDeep(rawNodejsServerResponse);
+      rawNodejsServerResponseForFailed.args[0].statusCode = 403;
 
       apiCollector.addAPIItem(rawNodejsServerResponse.args[0]);
       apiCollector.addAPIItem(rawNodejsServerResponseForFailed.args[0]);
@@ -199,9 +197,9 @@ describe("APICollector", () => {
       const url = Object.keys(items)[0];
       const openAPI = items[url].post;
       const responses = openAPI!.responses;
-      expect(Object.keys(responses)).to.be.lengthOf(2)
-      expect(responses).to.have.all.keys('200', '403')
+      expect(Object.keys(responses)).to.be.lengthOf(2);
+      expect(responses).to.have.all.keys('200', '403');
       done();
-    })
+    });
   });
 });
