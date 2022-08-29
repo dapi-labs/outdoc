@@ -267,6 +267,7 @@ export default class APICollector implements APICollectorInterface {
     if (!url) throw new Error('No url found');
     const method = this.extractMethod(serverResponse);
     const operationObj: OpenAPIV3_1.OperationObject = {};
+    const methodsHasReqBody = ['post', 'put']
 
     if (statusCode < 400) {
       const headers = this.extractHeaders(serverResponse);
@@ -277,9 +278,11 @@ export default class APICollector implements APICollectorInterface {
         operationObj.parameters = parameters;
       }
 
-      const requestBody = this.extractRequestBody(serverResponse);
-      if (requestBody) {
-        operationObj.requestBody = requestBody;
+      if (methodsHasReqBody.includes(method)) {
+        const requestBody = this.extractRequestBody(serverResponse);
+        if (requestBody) {
+          operationObj.requestBody = requestBody;
+        }
       }
     }
 

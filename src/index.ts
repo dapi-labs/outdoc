@@ -1,5 +1,6 @@
 import { spawn } from 'child_process';
 import fsPromises from 'fs/promises';
+import { existsSync } from 'fs'
 
 import {
   PREFIX_RESPONSE_BODY_DATA,
@@ -40,10 +41,14 @@ export async function runner (
   await fsPromises.writeFile(mainFileAbsolutePath, injectedCodes, { flag: "a" })
   await fsPromises.appendFile(mainFileAbsolutePath, "// @ts-nocheck")
 
-  const childProcess = spawn(args[0], args.slice(1), { stdio: ["inherit", "pipe", "inherit"] });
+  const childProcess = spawn(args[0], args.slice(1), {
+    detached: true,
+    stdio: ["inherit", "pipe", "inherit"]
+  });
 
   childProcess.stdout.on('data', (data) => {
     const dataStr = data.toString()
+
     if (dataStr.startsWith(PREFIX_RESPONSE_BODY_DATA)) {
       try {
         const res = JSON.parse(dataStr.substr(PREFIX_RESPONSE_BODY_DATA.length))
@@ -79,8 +84,11 @@ export async function runner (
   })
 
   childProcess.on('close', async (code) => {
-    await fsPromises.copyFile(projectCWD + "/outdoc_tmp_file", mainFileAbsolutePath)
-    await fsPromises.rm(projectCWD + "/outdoc_tmp_file")
+    const tmpFilePath = projectCWD + "/outdoc_tmp_file"
+    if (existsSync(tmpFilePath)) {
+      await fsPromises.copyFile(projectCWD + "/outdoc_tmp_file", mainFileAbsolutePath)
+      await fsPromises.rm(projectCWD + "/outdoc_tmp_file")
+    }
 
     if (code === 0) {
       try {
@@ -101,4 +109,12 @@ export async function runner (
       }
     }
   });
+
+  process.on('SIGINT', async () => {
+    const tmpFilePath = projectCWD + "/outdoc_tmp_file"
+    if (existsSync(tmpFilePath)) {
+      await fsPromises.copyFile(tmpFilePath, mainFileAbsolutePath)
+      await fsPromises.rm(tmpFilePath)
+    }
+});
 }
