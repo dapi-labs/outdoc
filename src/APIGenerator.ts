@@ -41,19 +41,19 @@ export default class APIGenerator {
     const output = opts.output || 'api.yaml';
     const fileFormat = path.extname(output);
     if (!SUPPORTED_FORMAT.includes(fileFormat)) {
-      throw new Error(`${fileFormat} file not supported`)
+      throw new Error(`${fileFormat} file not supported`);
     }
 
     await mkdir(path.dirname(output), { recursive: true });
     switch (fileFormat) {
       case ".json": {
         await writeFile(output, JSON.stringify(apiDoc, null, 2));
-        break
+        break;
       }
       case ".yaml": {
-        const yamlData = YAML.stringify(apiDoc)
+        const yamlData = YAML.stringify(apiDoc);
         await writeFile(output, yamlData);
-        break
+        break;
       }
     }
   }

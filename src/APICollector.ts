@@ -267,7 +267,7 @@ export default class APICollector implements APICollectorInterface {
     if (!url) throw new Error('No url found');
     const method = this.extractMethod(serverResponse);
     const operationObj: OpenAPIV3_1.OperationObject = {};
-    const methodsHasReqBody = ['post', 'put']
+    const methodsHasReqBody = ['post', 'put'];
 
     if (statusCode < 400) {
       const headers = this.extractHeaders(serverResponse);

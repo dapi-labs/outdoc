@@ -1,11 +1,11 @@
 import { spawn } from 'child_process';
 import fsPromises from 'fs/promises';
-import { existsSync } from 'fs'
+import { existsSync } from 'fs';
 
 import {
   PREFIX_RESPONSE_BODY_DATA,
   PREFIX_SERVER_RESPONSE
-} from './constants'
+} from './constants';
 import RequestHook from './RequestHook';
 import APICollector from './APICollector';
 import APIGenerator from './APIGenerator';
@@ -27,19 +27,20 @@ export async function runner (
   }
 
   const projectCWD = process.cwd();
-  const packageJSONStr = await fsPromises.readFile(projectCWD + '/package.json', 'utf8')
-  const packageJSON = JSON.parse(packageJSONStr)
-  const mainFilePath = packageJSON?.outdoc?.main || packageJSON?.main
-  if (!mainFilePath) throw new Error('Please define main or outdoc.main in package.json')
+  const packageJSONStr = await fsPromises.readFile(projectCWD + '/package.json', 'utf8');
+  const packageJSON = JSON.parse(packageJSONStr);
+  const mainFilePath = packageJSON?.outdoc?.main || packageJSON?.main;
+  if (!mainFilePath) throw new Error('Please define main or outdoc.main in package.json');
 
-  const mainFileAbsolutePath = `${projectCWD}/${mainFilePath}`
+  const mainFileAbsolutePath = projectCWD + "/" + mainFilePath;
+  const tmpFileAbsoluteath = projectCWD + "/outdoc_tmp_file";
   const apiCollector = new APICollector();
   const requestHook = new RequestHook(apiCollector);
 
-  const injectedCodes = RequestHook.getInjectedCodes()
-  await fsPromises.copyFile(mainFileAbsolutePath, projectCWD + "/outdoc_tmp_file")
-  await fsPromises.writeFile(mainFileAbsolutePath, injectedCodes, { flag: "a" })
-  await fsPromises.appendFile(mainFileAbsolutePath, "// @ts-nocheck")
+  const injectedCodes = RequestHook.getInjectedCodes();
+  await fsPromises.copyFile(mainFileAbsolutePath, projectCWD + "/outdoc_tmp_file");
+  await fsPromises.writeFile(mainFileAbsolutePath, injectedCodes, { flag: "a" });
+  await fsPromises.appendFile(mainFileAbsolutePath, "// @ts-nocheck");
 
   const childProcess = spawn(args[0], args.slice(1), {
     detached: true,
@@ -47,49 +48,44 @@ export async function runner (
   });
 
   childProcess.stdout.on('data', (data) => {
-    const dataStr = data.toString()
+    const dataStr = data.toString();
 
     if (dataStr.startsWith(PREFIX_RESPONSE_BODY_DATA)) {
       try {
-        const res = JSON.parse(dataStr.substr(PREFIX_RESPONSE_BODY_DATA.length))
+        const res = JSON.parse(dataStr.substr(PREFIX_RESPONSE_BODY_DATA.length));
         if (res.data?.encoding === 'buffer') {
-          res.data.chunk = new Buffer(res.data.chunk)
+          res.data.chunk = new Buffer(res.data.chunk);
         }
-        requestHook.handleResponseBodyData(res)
+        requestHook.handleResponseBodyData(res);
       } catch (err) {
         if (err instanceof Error) {
-          process.stderr.write(err.message)
+          process.stderr.write(err.message);
         }
       }
-      return
+      return;
     }
 
     if (dataStr.startsWith(PREFIX_SERVER_RESPONSE)) {
       try {
-        const res = JSON.parse(dataStr.substr(PREFIX_SERVER_RESPONSE.length))
+        const res = JSON.parse(dataStr.substr(PREFIX_SERVER_RESPONSE.length));
         if (res.data?.req?._readableState) {
-          const headData = res.data.req._readableState.buffer.head.data
-          res.data.req._readableState.buffer.head.data = new Buffer(headData)
+          const headData = res.data.req._readableState.buffer.head.data;
+          res.data.req._readableState.buffer.head.data = new Buffer(headData);
         }
-        requestHook.handleServerResponse(res)
+        requestHook.handleServerResponse(res);
       } catch (err) {
         if (err instanceof Error) {
-          process.stderr.write(err.message)
+          process.stderr.write(err.message);
         }
       }
-      return
+      return;
     }
 
-    process.stdout.write(data.toString())
-  })
+    process.stdout.write(data.toString());
+  });
 
   childProcess.on('close', async (code) => {
-    const tmpFilePath = projectCWD + "/outdoc_tmp_file"
-    if (existsSync(tmpFilePath)) {
-      await fsPromises.copyFile(projectCWD + "/outdoc_tmp_file", mainFileAbsolutePath)
-      await fsPromises.rm(projectCWD + "/outdoc_tmp_file")
-    }
-
+    await rmTmpFileAndGetOriginalBack(tmpFileAbsoluteath, mainFileAbsolutePath);
     if (code === 0) {
       try {
         await APIGenerator.generate(
@@ -111,10 +107,16 @@ export async function runner (
   });
 
   process.on('SIGINT', async () => {
-    const tmpFilePath = projectCWD + "/outdoc_tmp_file"
-    if (existsSync(tmpFilePath)) {
-      await fsPromises.copyFile(tmpFilePath, mainFileAbsolutePath)
-      await fsPromises.rm(tmpFilePath)
-    }
-});
+    await rmTmpFileAndGetOriginalBack(tmpFileAbsoluteath, mainFileAbsolutePath);
+  });
 }
+
+const rmTmpFileAndGetOriginalBack = async (
+  tmpFilePath: string,
+  mainFilePath: string
+) => {
+  if (existsSync(tmpFilePath)) {
+    await fsPromises.copyFile(tmpFilePath, mainFilePath);
+    await fsPromises.rm(tmpFilePath);
+  }
+};
