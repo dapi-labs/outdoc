@@ -6,7 +6,7 @@ import type {
   ObjectForResBodyBufferItem,
   ServerResponseArg
 } from './types/asyncEventTypes';
-import type { APICollectorInterface } from './APICollector.interface';
+import type APICollector from './APICollector';
 
 /**
  * The response body data comes before ServerResponse event
@@ -99,7 +99,7 @@ export default class RequestHook {
     `;
   }
 
-  constructor (private apiCollector: APICollectorInterface) {
+  constructor (private apiCollector: APICollector) {
     this.eventMap = {};
   }
 

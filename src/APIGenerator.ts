@@ -3,7 +3,8 @@ import path from 'path';
 import YAML from 'json-to-pretty-yaml';
 
 import type { OpenAPIV3_1 } from 'openapi-types';
-import type { API_URL, APICollectorInterface } from './APICollector.interface';
+import type { API_URL } from './types/apiTypes';
+import type APICollector from './APICollector';
 
 type GenDocOpts = {
   output?: string,
@@ -16,7 +17,7 @@ const SUPPORTED_FORMAT = ['.json', '.yaml'];
 
 export default class APIGenerator {
   public static async generate (
-    apiCollector: APICollectorInterface,
+    apiCollector: APICollector,
     opts: GenDocOpts
   ): Promise<void> {
     const apiItems = apiCollector.getItems();

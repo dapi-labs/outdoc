@@ -3,9 +3,9 @@ import qs from 'qs';
 import contentType from 'content-type';
 import type { OpenAPIV3_1 } from 'openapi-types';
 import type { ServerResponseArg, ObjectForResBodyBufferItem } from './types/asyncEventTypes';
-import type { API_URL, APICollectorInterface } from './APICollector.interface';
+import type { API_URL } from './types/apiTypes';
 
-export default class APICollector implements APICollectorInterface {
+export default class APICollector {
   private items: Record<API_URL, OpenAPIV3_1.PathItemObject>;
 
   constructor () {
@@ -82,7 +82,15 @@ export default class APICollector implements APICollectorInterface {
   }
 
   private extractHeaders (serverRes: ServerResponseArg): Array<OpenAPIV3_1.ParameterObject> {
-    const excludeHeaders = ['host', 'user-agent', 'content-length', 'content-type', 'accept'];
+    const excludeHeaders = [
+      'host',
+      'user-agent',
+      'content-length',
+      'content-type',
+      'accept',
+      'connection',
+      'accept-encoding'
+    ];
     const headers = this.genHeaderObjFromRawHeaders(
       serverRes.req.rawHeaders,
       { exclude: excludeHeaders }
