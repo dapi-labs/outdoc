@@ -7,9 +7,11 @@ import type { API_URL } from './types/apiTypes';
 
 export default class APICollector {
   private items: Record<API_URL, OpenAPIV3_1.PathItemObject>;
+  private pathCount: Record<string, number>;
 
   constructor () {
     this.items = {};
+    this.pathCount = {};
   }
 
   /**
@@ -227,12 +229,24 @@ export default class APICollector {
     };
   }
 
+  private increasePathCountByUrl (url: string) {
+    const paths = url.split("/").slice(1, 3);
+    paths.forEach(path => {
+      this.pathCount[path] = this.pathCount[path] || 0;
+      this.pathCount[path]++;
+    });
+  }
+
   private insertNewAPIItem (
     url: API_URL,
     method: OpenAPIV3_1.HttpMethods,
     methodContent: OpenAPIV3_1.OperationObject,
     statusCode: number
   ): void {
+    if (!this.items[url]) {
+      this.increasePathCountByUrl(url);
+    }
+
     // If the url method doesnt exist
     if (!this.items[url] || !this.items[url][method]) {
       this.items[url] = this.items[url] || {};
@@ -273,8 +287,11 @@ export default class APICollector {
     const statusCode = serverResponse.statusCode;
     const url = this.extractURL(serverResponse);
     if (!url) throw new Error('No url found');
+
     const method = this.extractMethod(serverResponse);
-    const operationObj: OpenAPIV3_1.OperationObject = {};
+    const operationObj: OpenAPIV3_1.OperationObject = {
+      tags: undefined
+    };
     const methodsHasReqBody = ['post', 'put'];
 
     if (statusCode < 400) {
@@ -302,6 +319,10 @@ export default class APICollector {
 
   public getItems(): Record<API_URL, OpenAPIV3_1.PathItemObject> {
     return this.items;
+  }
+
+  public getCountByPath(path: string): number {
+    return this.pathCount[path] || 0;
   }
 }
 

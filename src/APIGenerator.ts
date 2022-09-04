@@ -16,6 +16,42 @@ type GenDocOpts = {
 const SUPPORTED_FORMAT = ['.json', '.yaml'];
 
 export default class APIGenerator {
+  private static getTagByUrl (
+    url: API_URL,
+    apiCollector: APICollector
+  ): string | undefined {
+    const paths = url.split("/").slice(1, 3);
+    const totalURLAmount = Object.keys(apiCollector.getItems()).length;
+    let tag;
+    let max = 0;
+    paths.forEach((path, index) => {
+      const count = apiCollector.getCountByPath(path);
+      if (index === 0) {
+        if (count <= 1 || count >= totalURLAmount -1) {
+          return;
+        } else {
+          tag = path.trim();
+          max = Infinity;
+        }
+      } else {
+        if (count > max && count > 1) {
+          tag = path.trim();
+          max = count;
+        }
+      }
+    });
+    return tag;
+  }
+
+  private static addTagToPathItem(
+    tag: string,
+    pathItem: OpenAPIV3_1.PathItemObject
+  ): void {
+    Object.keys(pathItem).forEach(key => {
+      pathItem[key as OpenAPIV3_1.HttpMethods]!.tags = [tag]
+    })
+  }
+
   public static async generate (
     apiCollector: APICollector,
     opts: GenDocOpts
@@ -25,6 +61,10 @@ export default class APIGenerator {
       .reduce((acc, cur) => {
         const key: API_URL = cur[0];
         const value: OpenAPIV3_1.PathItemObject = cur[1];
+        const tag = APIGenerator.getTagByUrl(key, apiCollector);
+        if (tag) {
+          APIGenerator.addTagToPathItem(tag, value);
+        }
         acc[key] = value;
         return acc;
       }, {} as Record<string, any>);
