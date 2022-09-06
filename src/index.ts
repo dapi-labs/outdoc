@@ -1,6 +1,7 @@
 import { spawn } from 'child_process';
 import fsPromises from 'fs/promises';
 import { existsSync } from 'fs';
+import async_hooks from 'async_hooks';
 
 import {
   PREFIX_RESPONSE_BODY_DATA,
@@ -10,14 +11,119 @@ import RequestHook from './RequestHook';
 import APICollector from './APICollector';
 import APIGenerator from './APIGenerator';
 
-/**
- * 1. Copy origin server file to be a temporary file
- * 2. Inject async_hook to the new server file
- * 3. Spawn a child process to run the test
- * 4. In child process.stdout to get the req/res data
- * 5. Save these req/res data into APICollector
- * 6. In child process close, get original server file back and generate api doc
- */
+import type {
+  ObjectForResBodyArg,
+  ServerResponseArg,
+  ObjectForResBodyBufferItem
+} from './types/asyncEventTypes';
+
+type resBodyType = {
+  asyncId: number,
+  data: ObjectForResBodyBufferItem
+}
+
+type serverResType = {
+  triggerAsyncId: number,
+  data: ServerResponseArg | {
+    req: {
+      _readableState?: {
+        buffer: {
+          head: {
+            data: string
+          }
+        }
+      }
+    }
+  }
+}
+
+const rmTmpFileAndGetOriginalBack = async (
+  tmpFilePath: string,
+  mainFilePath: string
+) => {
+  if (existsSync(tmpFilePath)) {
+    await fsPromises.copyFile(tmpFilePath, mainFilePath);
+    await fsPromises.rm(tmpFilePath);
+  }
+};
+
+export class OutDoc {
+  public static init (): void {
+    const asyncHook = async_hooks.createHook({
+      init: (
+        asyncId: number,
+        type: string,
+        triggerAsyncId: number,
+        resource:  {
+          args: Array<ObjectForResBodyArg | ServerResponseArg>
+        }
+      ) => {
+        if (type === "TickObject" && resource.args) {
+          const className = resource.args?.[0]?.constructor.name;
+
+          // Response body data
+          if (className === "Object") {
+            const arg = resource.args[0] as ObjectForResBodyArg;
+            if (arg?.stream?.server && arg?.state?.buffered) {
+              const dataItem = arg.state.buffered.find(item => {
+                if (!item) return false;
+                return ['buffer', 'utf-8'].includes(item.encoding);
+              });
+              if (dataItem) {
+                const chunk = dataItem.encoding === 'buffer'
+                  ? dataItem.chunk.toString()
+                  : dataItem.chunk;
+                const res: resBodyType = {
+                  asyncId,
+                  data: {
+                    encoding: dataItem.encoding,
+                    chunk
+                  }
+                };
+                console.log(PREFIX_RESPONSE_BODY_DATA + JSON.stringify(res));
+              }
+            }
+          }
+
+          // Server response
+          if (className === "ServerResponse") {
+            const arg = resource.args[0] as ServerResponseArg;
+            const res: serverResType = {
+              triggerAsyncId,
+              data: {
+                _header: arg._header,
+                statusCode: arg.statusCode,
+                statusMessage: arg.statusMessage,
+                req: {
+                  rawHeaders: arg.req.rawHeaders,
+                  url: arg.req.url,
+                  method: arg.req.method,
+                  params: arg.req.params,
+                  query: arg.req.query,
+                  baseUrl: arg.req.baseUrl,
+                  originalUrl: arg.req.originalUrl,
+                  body: arg.req.body
+                }
+              }
+            };
+            if (arg.req._readableState?.buffer?.head?.data) {
+              res.data.req._readableState = {
+                buffer: {
+                  head: {
+                    data: arg.req._readableState.buffer.head.data.toString()
+                  }
+                }
+              };
+            }
+            console.log(PREFIX_SERVER_RESPONSE + JSON.stringify(res));
+          }
+        }
+      }
+    });
+    asyncHook.enable();
+  }
+}
+
 export async function runner (
   args: Array<string>,
   options: Record<string, string>
@@ -26,21 +132,26 @@ export async function runner (
     throw new Error('No arguments found');
   }
 
-  const projectCWD = process.cwd();
-  const packageJSONStr = await fsPromises.readFile(projectCWD + '/package.json', 'utf8');
-  const packageJSON = JSON.parse(packageJSONStr);
-  const mainFilePath = packageJSON?.outdoc?.main || packageJSON?.main;
-  if (!mainFilePath) throw new Error('Please define main or outdoc.main in package.json');
-
-  const mainFileAbsolutePath = projectCWD + "/" + mainFilePath;
-  const tmpFileAbsoluteath = projectCWD + "/outdoc_tmp_file";
   const apiCollector = new APICollector();
   const requestHook = new RequestHook(apiCollector);
+  let mainFileAbsolutePath: string;
+  let tmpFileAbsoluteath: string;
 
-  const injectedCodes = RequestHook.getInjectedCodes();
-  await fsPromises.copyFile(mainFileAbsolutePath, projectCWD + "/outdoc_tmp_file");
-  await fsPromises.writeFile(mainFileAbsolutePath, injectedCodes, { flag: "a" });
-  await fsPromises.appendFile(mainFileAbsolutePath, "// @ts-nocheck");
+  if (options.force) {
+    const projectCWD = process.cwd();
+    const packageJSONStr = await fsPromises.readFile(projectCWD + '/package.json', 'utf8');
+    const packageJSON = JSON.parse(packageJSONStr);
+    const mainFilePath = packageJSON?.outdoc?.main || packageJSON?.main;
+    if (!mainFilePath) throw new Error('Please define main or outdoc.main in package.json');
+
+    mainFileAbsolutePath = projectCWD + "/" + mainFilePath;
+    tmpFileAbsoluteath = projectCWD + "/outdoc_tmp_file";
+
+    const injectedCodes = RequestHook.getInjectedCodes();
+    await fsPromises.copyFile(mainFileAbsolutePath, projectCWD + "/outdoc_tmp_file");
+    await fsPromises.writeFile(mainFileAbsolutePath, injectedCodes, { flag: "a" });
+    await fsPromises.appendFile(mainFileAbsolutePath, "// @ts-nocheck");
+  }
 
   const childProcess = spawn(args[0], args.slice(1), {
     detached: true,
@@ -85,7 +196,10 @@ export async function runner (
   });
 
   childProcess.on('close', async (code) => {
-    await rmTmpFileAndGetOriginalBack(tmpFileAbsoluteath, mainFileAbsolutePath);
+    if (options.force) {
+      await rmTmpFileAndGetOriginalBack(tmpFileAbsoluteath, mainFileAbsolutePath);
+    }
+
     if (code === 0) {
       try {
         await APIGenerator.generate(
@@ -107,16 +221,8 @@ export async function runner (
   });
 
   process.on('SIGINT', async () => {
-    await rmTmpFileAndGetOriginalBack(tmpFileAbsoluteath, mainFileAbsolutePath);
+    if (options.force) {
+      await rmTmpFileAndGetOriginalBack(tmpFileAbsoluteath, mainFileAbsolutePath);
+    }
   });
 }
-
-const rmTmpFileAndGetOriginalBack = async (
-  tmpFilePath: string,
-  mainFilePath: string
-) => {
-  if (existsSync(tmpFilePath)) {
-    await fsPromises.copyFile(tmpFilePath, mainFilePath);
-    await fsPromises.rm(tmpFilePath);
-  }
-};

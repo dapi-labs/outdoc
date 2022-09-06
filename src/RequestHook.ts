@@ -1,7 +1,3 @@
-import {
-  PREFIX_RESPONSE_BODY_DATA,
-  PREFIX_SERVER_RESPONSE
-} from './constants';
 import type {
   ObjectForResBodyBufferItem,
   ServerResponseArg
@@ -30,72 +26,8 @@ export default class RequestHook {
 
   public static getInjectedCodes (): string {
     return `
-      const async_hooks = require('async_hooks')
-      const asyncHook = async_hooks.createHook({
-        init: (asyncId, type, triggerAsyncId, resource) => {
-          if (type === "TickObject" && resource.args) {
-            const className = resource.args?.[0]?.constructor.name;
-
-            // Response body data
-            if (className === "Object") {
-              const arg = resource.args[0]
-              if (arg?.stream?.server && arg?.state?.buffered) {
-                const dataItem = arg.state.buffered.find(item => {
-                  if (!item) return false
-                  return ['buffer', 'utf-8'].includes(item.encoding)
-                })
-                if (dataItem) {
-                  const chunk = dataItem.encoding === 'buffer'
-                    ? dataItem.chunk.toString()
-                    : dataItem.chunk
-                  const res = {
-                    asyncId,
-                    data: {
-                      encoding: dataItem.encoding,
-                      chunk
-                    }
-                  }
-                  console.log("${PREFIX_RESPONSE_BODY_DATA}" + JSON.stringify(res))
-                }
-              }
-            }
-
-            // Server response
-            if (className === "ServerResponse") {
-              const arg = resource.args[0];
-              const res = {
-                triggerAsyncId,
-                data: {
-                  _header: arg._header,
-                  statusCode: arg.statusCode,
-                  statusMessage: arg.statusMessage,
-                  req: {
-                    rawHeaders: arg.req.rawHeaders,
-                    url: arg.req.url,
-                    method: arg.req.method,
-                    params: arg.req.params,
-                    query: arg.req.query,
-                    baseUrl: arg.req.baseUrl,
-                    originalUrl: arg.req.originalUrl,
-                    body: arg.req.body
-                  }
-                }
-              }
-              if (arg.req._readableState?.buffer?.head?.data) {
-                res.data.req._readableState = {
-                  buffer: {
-                    head: {
-                      data: arg.req._readableState.buffer.head.data.toString()
-                    }
-                  }
-                }
-              }
-              console.log("${PREFIX_SERVER_RESPONSE}" + JSON.stringify(res))
-            }
-          }
-        }
-      });
-      asyncHook.enable();
+      const { OutDoc } = require('outdoc');
+      OutDoc.init();
     `;
   }
 

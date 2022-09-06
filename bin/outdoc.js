@@ -16,6 +16,7 @@ const main = async () => {
     .option('-t, --title <string>', 'title of the api document, default: API Document')
     .option('-v, --version <string>', 'version of the api document, default: 1.0.0')
     .option('-e, --email <string>', 'contact information')
+    .option('-f, --force', 'without importing the library in your application')
     .parse();
 
   const args = program.args;

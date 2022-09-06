@@ -48,8 +48,8 @@ export default class APIGenerator {
     pathItem: OpenAPIV3_1.PathItemObject
   ): void {
     Object.keys(pathItem).forEach(key => {
-      pathItem[key as OpenAPIV3_1.HttpMethods]!.tags = [tag]
-    })
+      pathItem[key as OpenAPIV3_1.HttpMethods]!.tags = [tag];
+    });
   }
 
   public static async generate (
