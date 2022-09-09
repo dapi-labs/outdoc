@@ -3,6 +3,7 @@
   "version": "0.2.0",
   "description": "Auto-generate OpenAPI document for Node.js service from the local testing",
   "main": "lib/index.js",
+  "types": "lib/index.d.ts",
   "bin": {
     "outdoc": "./bin/outdoc.js"
   },
