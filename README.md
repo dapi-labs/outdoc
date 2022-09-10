@@ -8,6 +8,8 @@
 
 Auto generate OpenAPI document from local HTTP testing
 
+<img width="4111" alt="Group 3" src="https://user-images.githubusercontent.com/5305874/189489578-5e91e8a6-6546-4da0-8706-40f60fb38a00.png">
+
 ## Installation
 
 ```bash
@@ -38,7 +40,6 @@ $ npx outdoc npm test -t project-name
 ```
 
 Adn it will generate an api.yaml in your root folder by defaults
-
 
 ## Options
 
