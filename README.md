@@ -17,20 +17,28 @@ $ npm install outdoc -D
 ## Usage
 
 Add the following codes into your main file
+
+```js
+const { OutDoc } = require('outdoc')
+if (process.env.NODE_ENV === "test") {
+  OutDoc.init()
+}
 ```
-```
+
+Run the command
 
 ```bash
 $ npx outdoc [test command] [options]
 ```
 
-Usually it could be:
+Usually it could be, for example:
 
 ```bash
 $ npx outdoc npm test -t project-name
 ```
 
-Finally it will generate an api.yaml in your root folder by default
+Adn it will generate an api.yaml in your root folder by defaults
+
 
 ## Options
 
@@ -43,49 +51,42 @@ Finally it will generate an api.yaml in your root folder by default
   -h, --help              display help for command
 ```
 
+## Not adding extra codes
+You might don't wanna add any extra codes in your project only for generating API document, then you can do:
 
+First, Check if the **main** in your package.json pointing to your app entry file which export your nodejs server. If not, please add the attribute **outdoc** pointing to it. If you are writting a Typescript project, you need to add the following configuration.
 
-
-
-## Configuration
-Check if the field `main` in your package.json pointing to the file where the node server exported.
-
-If not, add `output.main` pointing to the file, e.g.:
-
-```
+```json
 {
-  ...
-  "outdoc": {
-    "main": "./server/index.js"
-  }
+	"outdoc": {
+		"main": "./src/app.ts"
+	}
 }
 ```
 
+Then run the command with the option **-f**
 
-## Typescript projects
-Add `output.main` in your package.json pointing to the file where the nodejs server exported, e.g.:
-
+```bash
+$ npx outdoc npm test -f
 ```
-{
-  ...
-  "outdoc": {
-    "main": "./src/app.ts"
-  }
-}
 
-```
-afte that you can run the script as usual
+#### What is happending behind `-f`
+
+By using the option `-f`, Outdoc will first check the **outdoc.main** in your package.json, if it not exist, Outdoc will use **main** in the package.json to find the app entry file.
+
+Then Outdoc will copy the entry app file and insert codes into it, and use the new copied file as the entry app file, the concrete steps are:
+
+1. Find your app entry file from package.json, for example the file is named as app.js
+2. Copy app.js to a new temporary file named tmp_outdoc_file
+3. Insert Outdoc.init into app.js and start running the program to generate the API doc
+4. After the generation finished, copy back the content of tmp_outdoc_file to app.js and remove tmp_outdoc_file
 
 
-## Behind the screen
+## Notes
 
-Outdoc make use the node module `async_hooks` to understand all the HTTP request to the nodejs server.
+Outdoc can only understand tests who are sending and receiving real HTTP requests, for example using the [supertest](https://github.com/visionmedia/supertest) in your test cases.
 
-When you running the e2e testing, you are like telling outdoc "ok, this is a 200 request if you pass in such request body", "and this endpoint can return 403 with a code 100", etc. Outdoc will generate the api doc based on that.
-
-So if you wanna have a completed API doc, you need
-1. Writing e2e test covering all the cases of your API.
-2. Running e2e test with real http request, that means testing tools like supertest is a fit, but fastify.inject won't work.
+Mocked HTTP request won't work with Ourdoc, like fastify.inject.
 
 ## License
 
