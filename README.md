@@ -1,21 +1,51 @@
-# outdoc
+<img width="40%" height="40%" src="https://user-images.githubusercontent.com/5305874/189351845-477cc7e1-cd6e-40c2-ae44-9bd169a41595.png" />
+
 [![Version](http://img.shields.io/npm/v/outdoc.svg)](https://www.npmjs.org/package/outdoc)
 [![npm download][download-image]][download-url]
 
 [download-image]: https://img.shields.io/npm/dm/outdoc.svg?style=flat-square
 [download-url]: https://npmjs.org/package/outdoc
 
-Auto generate OpenAPI document from local testing
-
-The project still need more tests to cover more use cases
-
-Please try it in your project and let us know if you got any issues or suggestions
+Auto generate OpenAPI document from local HTTP testing
 
 ## Installation
 
 ```bash
 $ npm install outdoc -D
 ```
+
+## Usage
+
+Add the following codes into your main file
+```
+```
+
+```bash
+$ npx outdoc [test command] [options]
+```
+
+Usually it could be:
+
+```bash
+$ npx outdoc npm test -t project-name
+```
+
+Finally it will generate an api.yaml in your root folder by default
+
+## Options
+
+```
+  -o, --output            file path of the generated doc, format supports json and yaml, default: api.yaml
+  -t, --title <string>    title of the api document, default: API Document
+  -v, --version <string>  version of the api document, default: 1.0.0
+  -e, --email <string>    contact information
+  -f, --force             run the script without adding OutDoc.init in the code 
+  -h, --help              display help for command
+```
+
+
+
+
 
 ## Configuration
 Check if the field `main` in your package.json pointing to the file where the node server exported.
@@ -29,29 +59,6 @@ If not, add `output.main` pointing to the file, e.g.:
     "main": "./server/index.js"
   }
 }
-```
-
-## Usage
-
-```bash
-$ npx outdoc [test command] [options]
-```
-
-Usually it could be:
-
-```bash
-$ npx outdoc npm test -t project-name
-```
-And it will generate an api.yaml in your root folder by default
-
-## Options
-
-```
-  -o, --output            file path of the generated doc, format supports json and yaml, default: api.yaml
-  -t, --title <string>    title of the api document, default: API Document
-  -v, --version <string>  version of the api document, default: 1.0.0
-  -e, --email <string>    contact information
-  -h, --help              display help for command
 ```
 
 
