@@ -10,7 +10,9 @@ Auto generate OpenAPI document from local HTTP testing
 
 
 
-<img width="30%" height="30%" src="https://user-images.githubusercontent.com/5305874/193726116-d427aebd-035f-4692-a82f-cfaf3cd4d885.png">
+<img width="35%" height="35%" src="https://user-images.githubusercontent.com/5305874/193726116-d427aebd-035f-4692-a82f-cfaf3cd4d885.png">
+
+_colorful robot writing document by Stable Diffusion_
 
 ## Installation
 
