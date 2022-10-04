@@ -1,4 +1,6 @@
-<img width="40%" height="40%" src="https://user-images.githubusercontent.com/5305874/189351845-477cc7e1-cd6e-40c2-ae44-9bd169a41595.png" />
+## Outdoc
+
+Auto generate OpenAPI document from local HTTP testing
 
 [![Version](http://img.shields.io/npm/v/outdoc.svg)](https://www.npmjs.org/package/outdoc)
 [![npm download][download-image]][download-url]
@@ -6,9 +8,9 @@
 [download-image]: https://img.shields.io/npm/dm/outdoc.svg?style=flat-square
 [download-url]: https://npmjs.org/package/outdoc
 
-Auto generate OpenAPI document from local HTTP testing
 
-<img width="4111" alt="Group 3" src="https://user-images.githubusercontent.com/5305874/189489578-5e91e8a6-6546-4da0-8706-40f60fb38a00.png">
+
+<img width="30%" height="30%" src="https://user-images.githubusercontent.com/5305874/193726116-d427aebd-035f-4692-a82f-cfaf3cd4d885.png">
 
 ## Installation
 
