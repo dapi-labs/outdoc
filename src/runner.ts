@@ -52,7 +52,7 @@ export async function runner (
 
   const childProcess = spawn(args[0], args.slice(1), {
     detached: true,
-    stdio: ["inherit", "pipe", "pipe"],
+    stdio: ["inherit", "inherit", "pipe"],
     env: {
       ...process.env,
       NODE_ENV: 'test',
@@ -75,7 +75,7 @@ export async function runner (
             requestHook.handleResponseBodyData(res);
           } catch (err) {
             if (err instanceof Error) {
-              process.stderr.write(err.message)
+              process.stderr.write(err.message);
             }
           }
           return;
@@ -98,7 +98,7 @@ export async function runner (
         }
 
         process.stderr.write(dataStr + "\n");
-      })
+      });
   });
 
   childProcess.on('close', async (code) => {
@@ -117,11 +117,11 @@ export async function runner (
             email: options.email
           }
         );
-        console.log('Generate API document success');
+        console.log('✅ Success generating API document');
       } catch (err) {
         let message = "";
         if (err instanceof Error) message = err.message;
-        console.log('Generate API document failed: ', message);
+        console.log('💔 Failed generating API document failed: ', message);
       }
     }
   });

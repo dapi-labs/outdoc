@@ -20,13 +20,13 @@ describe('api testing', () => {
       });
   })
 
-  // test('should able to delete', (done) => {
-  //   request
-  //     .delete('/projects/uuid-2')
-  //     .expect(204)
-  //     .end(function(err, res) {
-  //       if (err) throw err;
-  //       done()
-  //     });
-  // })
+  test('should able to delete', (done) => {
+    request
+      .delete('/projects/uuid-2')
+      .expect(204)
+      .end(function(err, res) {
+        if (err) throw err;
+        done()
+      });
+  })
 })

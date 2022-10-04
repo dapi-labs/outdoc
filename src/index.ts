@@ -34,7 +34,7 @@ type serverResType = {
 export class OutDoc {
   public static init (): void {
     // Prevent pollute running normal testing
-    if (process.env.IS_OUTDOC !== 'true') return
+    if (process.env.IS_OUTDOC !== 'true') return;
 
     const asyncHook = async_hooks.createHook({
       init: (
@@ -102,6 +102,7 @@ export class OutDoc {
                 }
               };
             }
+
             process.stderr.write(PREFIX_SERVER_RESPONSE + JSON.stringify(res) + "\n");
           }
         }
