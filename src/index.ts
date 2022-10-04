@@ -102,7 +102,6 @@ export class OutDoc {
                 }
               };
             }
-
             process.stderr.write(PREFIX_SERVER_RESPONSE + JSON.stringify(res) + "\n");
           }
         }

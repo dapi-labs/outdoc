@@ -4,8 +4,10 @@
   "description": "examples for outdoc",
   "main": "index.js",
   "scripts": {
-    "express-mocha:test": "mocha -b --timeout 10000 --reporter spec --exit express+mocha/*.test.js",
-    "express-mocha": "outdoc npm run express-mocha:test"
+    "express-mocha:test": "mocha -b --timeout 10000 --reporter spec --exit express_mocha/*.test.js",
+    "express-mocha": "outdoc npm run express-mocha:test",
+    "express-jest:test": "jest --forceExit --detectOpenHandles --bail --no-cache express_jest/case2.test.js",
+    "express-jest": "outdoc npm run express-jest:test"
   },
   "dependencies": {
     "express": "^4.18.1"
