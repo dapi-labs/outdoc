@@ -56,6 +56,10 @@ Adn it will generate an api.yaml in your root folder by defaults
   -h, --help              display help for command
 ```
 
+## Examples
+
+Please check [examples](https://github.com/dapi-labs/outdoc/tree/main/examples) in here of how to use Outdoc with different frameworks
+
 ## Not adding extra codes
 You might don't wanna add any extra codes in your project only for generating API document, then you can do:
 
