@@ -52,7 +52,12 @@ export async function runner (
 
   const childProcess = spawn(args[0], args.slice(1), {
     detached: true,
-    stdio: ["inherit", "inherit", "pipe"]
+    stdio: ["inherit", "inherit", "pipe"],
+    env: {
+      ...process.env,
+      NODE_ENV: 'test',
+      IS_OUTDOC: 'true'
+    }
   });
 
   childProcess.stderr.on('data', (data) => {
@@ -65,12 +70,12 @@ export async function runner (
           try {
             const res = JSON.parse(dataStr.substr(PREFIX_RESPONSE_BODY_DATA.length));
             if (res.data?.encoding === 'buffer') {
-              res.data.chunk = new Buffer(res.data.chunk);
+              res.data.chunk = Buffer.from(res.data.chunk);
             }
             requestHook.handleResponseBodyData(res);
           } catch (err) {
             if (err instanceof Error) {
-              process.stdout.write(err.message)
+              process.stderr.write(err.message);
             }
           }
           return;
@@ -81,19 +86,19 @@ export async function runner (
             const res = JSON.parse(dataStr.substr(PREFIX_SERVER_RESPONSE.length));
             if (res.data?.req?._readableState) {
               const headData = res.data.req._readableState.buffer.head.data;
-              res.data.req._readableState.buffer.head.data = new Buffer(headData);
+              res.data.req._readableState.buffer.head.data = Buffer.from(headData);
             }
             requestHook.handleServerResponse(res);
           } catch (err) {
             if (err instanceof Error) {
-              process.stdout.write(err.message);
+              process.stderr.write(err.message);
             }
           }
           return;
         }
 
         process.stderr.write(dataStr + "\n");
-      })
+      });
   });
 
   childProcess.on('close', async (code) => {
@@ -112,11 +117,11 @@ export async function runner (
             email: options.email
           }
         );
-        console.log('Generate API document success');
+        console.log('✅ Success generating API document');
       } catch (err) {
         let message = "";
         if (err instanceof Error) message = err.message;
-        console.log('Generate API document failed: ', message);
+        console.log('💔 Failed generating API document failed: ', message);
       }
     }
   });

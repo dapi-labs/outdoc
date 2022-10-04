@@ -292,8 +292,7 @@ export default class APICollector {
     const operationObj: OpenAPIV3_1.OperationObject = {
       tags: undefined
     };
-    const methodsHasReqBody = ['post', 'put'];
-
+    const methodsHasReqBody = ['post', 'put', 'patch'];
     if (statusCode < 400) {
       const headers = this.extractHeaders(serverResponse);
       const queries = this.extractQueries(serverResponse);

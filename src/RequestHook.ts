@@ -43,6 +43,5 @@ export default class RequestHook {
     const triggerAsyncId = res.triggerAsyncId;
     const responseBodyData = this.eventMap[triggerAsyncId];
     this.apiCollector.addAPIItem(res.data, responseBodyData);
-    delete this.eventMap[triggerAsyncId];
   }
 }
