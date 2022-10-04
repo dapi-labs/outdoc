@@ -7,14 +7,24 @@
     "express-mocha:test": "mocha -b --timeout 10000 --reporter spec --exit express_mocha/*.test.js",
     "express-mocha": "outdoc npm run express-mocha:test",
     "express-jest:test": "jest --forceExit --detectOpenHandles --bail express_jest/*.test.js",
-    "express-jest": "outdoc npm run express-jest:test"
+    "express-jest": "outdoc npm run express-jest:test -o api.json -t express-jest-example",
+    "express-mocha-ts:test": "env TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' NODE_ENV=test mocha -b --timeout 10000 --reporter spec --exit -r ts-node/register 'express_mocha_ts/*.test.ts'",
+    "express-mocha-ts": "outdoc npm run express-mocha-ts:test -f"
+  },
+  "outdoc": {
+    "main": "express_mocha_ts/src/index.ts"
   },
   "dependencies": {
     "express": "^4.18.1"
   },
   "devDependencies": {
+    "@types/express": "^4.17.14",
+    "@types/mocha": "^10.0.0",
+    "@types/node": "^18.8.1",
+    "@types/supertest": "^2.0.12",
     "jest": "^29.0.3",
     "mocha": "^10.0.0",
-    "supertest": "^6.2.4"
+    "supertest": "^6.2.4",
+    "ts-node": "^10.9.1"
   }
 }
