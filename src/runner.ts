@@ -52,7 +52,12 @@ export async function runner (
 
   const childProcess = spawn(args[0], args.slice(1), {
     detached: true,
-    stdio: ["inherit", "inherit", "pipe"]
+    stdio: ["inherit", "inherit", "pipe"],
+    env: {
+      ...process.env,
+      NODE_ENV: 'test',
+      IS_OUTDOC: 'true'
+    }
   });
 
   childProcess.stderr.on('data', (data) => {

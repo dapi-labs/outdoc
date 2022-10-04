@@ -33,6 +33,9 @@ type serverResType = {
 
 export class OutDoc {
   public static init (): void {
+    // Prevent pollute running normal testing
+    if (process.env.IS_OUTDOC !== 'true') return
+
     const asyncHook = async_hooks.createHook({
       init: (
         asyncId: number,

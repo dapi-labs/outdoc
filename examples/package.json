@@ -3,7 +3,10 @@
   "version": "1.0.0",
   "description": "examples for outdoc",
   "main": "index.js",
-  "scripts": {},
+  "scripts": {
+    "express-mocha:test": "mocha -b --timeout 10000 --reporter spec --exit express+mocha/*.test.js",
+    "express-mocha": "outdoc npm run express-mocha:test"
+  },
   "dependencies": {
     "express": "^4.18.1"
   },
