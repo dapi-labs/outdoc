@@ -1,6 +1,6 @@
 {
   "name": "outdoc",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Auto-generate OpenAPI document for Node.js service from the local testing",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
