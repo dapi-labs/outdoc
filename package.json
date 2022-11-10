@@ -51,5 +51,12 @@
     "content-type": "^1.0.4",
     "json-to-pretty-yaml": "^1.2.2",
     "qs": "^6.11.0"
-  }
+  },
+  "keywords": [
+    "nodejs",
+    "openapi",
+    "api document",
+    "api generator",
+    "document generator"
+  ]
 }
